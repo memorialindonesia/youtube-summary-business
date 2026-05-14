@@ -1,7 +1,7 @@
 settings:
-  initial_lookback_days: 7        # podcast long-form, beberapa channel upload bulanan (Acquired, Masters of Scale)
+  initial_lookback_days: 2        # podcast long-form, beberapa channel upload bulanan (Acquired, Masters of Scale)
   min_duration_seconds: 600       # 10 menit minimum, skip clip/shorts
-  max_videos_per_run: 15          # safety cap untuk 22 channel
+  max_videos_per_run: 35          # safety cap untuk 22 channel
   claude_model: claude-sonnet-4-5
   supadata_lang: auto             # mix English + Bahasa Indonesia
 
