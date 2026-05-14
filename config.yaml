@@ -1,0 +1,83 @@
+settings:
+  initial_lookback_days: 7        # podcast long-form, beberapa channel upload bulanan (Acquired, Masters of Scale)
+  min_duration_seconds: 600       # 10 menit minimum, skip clip/shorts
+  max_videos_per_run: 15          # safety cap untuk 22 channel
+  claude_model: claude-sonnet-4-5
+  supadata_lang: auto             # mix English + Bahasa Indonesia
+
+channels:
+  # === Tier S: Operator-grade Founder/VC ===
+  - name: "My First Million"
+    id: "UCyaN6mg5u8Cjy2ZI4ikWaug"
+    color: "#4A90E2"
+  - name: "20VC with Harry Stebbings"
+    id: "UCf0PBRjhf0rF8fWBIxTuoWA"
+    color: "#9B59B6"
+  - name: "Acquired"
+    id: "UCyFqFYfTW2VoIQKylJ04Rtw"
+    color: "#16A085"
+  - name: "Lenny's Podcast"
+    id: "UC6t1O76G0jYXOAoYCm153dA"
+    color: "#E67E22"
+  - name: "Founders Podcast"
+    id: "UCQ-rrUCsJLNjFdPtKq0YOfA"
+    color: "#2C3E50"
+  - name: "The Diary Of A CEO"
+    id: "UCGq-a57w-aPwyi3pW7XLiHw"
+    color: "#C0392B"
+  - name: "Tim Ferriss"
+    id: "UCznv7Vf9nBdJYvBagFdAHWw"
+    color: "#27AE60"
+
+  # === Tier A: Practical & High-Signal ===
+  - name: "Codie Sanchez"
+    id: "UC5fI3kxC-ewZ6ZXEYgznM7g"
+    color: "#F39C12"
+  - name: "a16z"
+    id: "UC9cn0TuPq4dnbTY-CBsm8XA"
+    color: "#FF6B35"
+  - name: "Y Combinator"
+    id: "UCcefcZRL2oaA_uBNeo5UOWg"
+    color: "#3498DB"
+  - name: "The Knowledge Project"
+    id: "UCLtTf_uKt0Itd0NG7txrwXA"
+    color: "#1ABC9C"
+  - name: "All-In Podcast"
+    id: "UCESLZhusAkFfsNsApnjF_Cg"
+    color: "#34495E"
+  - name: "Masters of Scale"
+    id: "UCiemDAS1bXMBTx3jIIOukFg"
+    color: "#E91E63"
+  - name: "Chris Williamson (Modern Wisdom)"
+    id: "UCIaH-gZIVC432YRjNVvnyCA"
+    color: "#D97757"
+
+  # === Tier B: Academic/Specialized ===
+  - name: "Harvard Business Review"
+    id: "UCWo4IA01TXzBeGJJKWHOG9g"
+    color: "#7D3C98"
+  - name: "Stanford Graduate School of Business"
+    id: "UCGwuxdEeCf0TIA2RbPOj-8g"
+    color: "#A93226"
+  - name: "Knowledge at Wharton"
+    id: "UCIf6t3gpKr_D46xuWlj9UAQ"
+    color: "#1F618D"
+
+  # === Indonesian Creators ===
+  - name: "Raymond Chin"
+    id: "UCm4eA46c6boHmPrD0Lp2iEg"
+    color: "#00CEC9"
+  - name: "Felicia Putri Tjiasaka"
+    id: "UCcRPwXqvUHbf8nY5ofQ1_VA"
+    color: "#FD79A8"
+  - name: "Coach Tom (Tom MC Ifle)"
+    id: "UCnBbolAKpFYQqEG7LkD67CA"
+    color: "#A29BFE"
+
+  # === FLAGGED — review setelah 2 minggu, drop kalau rasio skip >70% ===
+  - name: "Helmy Yahya Bicara"
+    id: "UC5kyULWIngxMEeXsivTydLQ"
+    color: "#6C757D"
+  - name: "Andika Sutoro Putra"
+    id: "UCv5lUwOhsvzSfcNB5bDvh-Q"
+    color: "#495057"
