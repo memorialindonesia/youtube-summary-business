@@ -1,18 +1,24 @@
 settings:
-  initial_lookback_days: 2        # podcast long-form, beberapa channel upload bulanan (Acquired, Masters of Scale)
-  min_duration_seconds: 600       # 10 menit minimum, skip clip/shorts
-  max_videos_per_run: 35          # safety cap untuk 22 channel
+  initial_lookback_days: 2
+  min_duration_seconds: 600
+  max_videos_per_run: 35
   claude_model: claude-sonnet-4-5
-  supadata_lang: auto             # mix English + Bahasa Indonesia
+  supadata_lang: auto
+
+# ============================================================
+# CARA AMBIL CHANNEL ID YANG BENAR (deterministik, 100% akurat):
+# 1. Buka channel YouTube di browser (cth: https://www.youtube.com/@LennysPodcast)
+# 2. Klik kanan → View Page Source (Ctrl+U)
+# 3. Ctrl+F → cari "channelId":"
+# 4. Copy value-nya, format: UC + 22 karakter (total 24 char)
+#
+# Pastikan ambil MAIN channel, bukan "Clips" / "Highlights" / side channel.
+# YouTube Music podcast channel (channel auto-generated dari Spotify/Apple RSS)
+# TIDAK PUNYA RSS feed dan akan return 404.
+# ============================================================
 
 channels:
-  # === Tier S: Operator-grade Founder/VC ===
-  - name: "My First Million"
-    id: "UCyaN6mg5u8Cjy2ZI4ikWaug"
-    color: "#4A90E2"
-  - name: "20VC with Harry Stebbings"
-    id: "UCf0PBRjhf0rF8fWBIxTuoWA"
-    color: "#9B59B6"
+  # ---------- VERIFIED ✓ (main channel, RSS feed berfungsi) ----------
   - name: "Acquired"
     id: "UCyFqFYfTW2VoIQKylJ04Rtw"
     color: "#16A085"
@@ -20,64 +26,79 @@ channels:
     id: "UC6t1O76G0jYXOAoYCm153dA"
     color: "#E67E22"
   - name: "Founders Podcast"
-    id: "UCQ-rrUCsJLNjFdPtKq0YOfA"
+    id: "UCYOU289oQio3E7jerlJP5Jg"
     color: "#2C3E50"
-  - name: "The Diary Of A CEO"
-    id: "UCGq-a57w-aPwyi3pW7XLiHw"
-    color: "#C0392B"
   - name: "Tim Ferriss"
     id: "UCznv7Vf9nBdJYvBagFdAHWw"
     color: "#27AE60"
-
-  # === Tier A: Practical & High-Signal ===
-  - name: "Codie Sanchez"
-    id: "UC5fI3kxC-ewZ6ZXEYgznM7g"
-    color: "#F39C12"
-  - name: "a16z"
-    id: "UC9cn0TuPq4dnbTY-CBsm8XA"
-    color: "#FF6B35"
-  - name: "Y Combinator"
-    id: "UCcefcZRL2oaA_uBNeo5UOWg"
-    color: "#3498DB"
-  - name: "The Knowledge Project"
-    id: "UCLtTf_uKt0Itd0NG7txrwXA"
-    color: "#1ABC9C"
-  - name: "All-In Podcast"
-    id: "UCESLZhusAkFfsNsApnjF_Cg"
-    color: "#34495E"
-  - name: "Masters of Scale"
-    id: "UCiemDAS1bXMBTx3jIIOukFg"
-    color: "#E91E63"
   - name: "Chris Williamson (Modern Wisdom)"
     id: "UCIaH-gZIVC432YRjNVvnyCA"
     color: "#D97757"
-
-  # === Tier B: Academic/Specialized ===
-  - name: "Harvard Business Review"
-    id: "UCWo4IA01TXzBeGJJKWHOG9g"
-    color: "#7D3C98"
+  - name: "Masters of Scale"
+    id: "UCQDXdr8B2Ou72uNZynnAt3A"
+    color: "#E91E63"
   - name: "Stanford Graduate School of Business"
     id: "UCGwuxdEeCf0TIA2RbPOj-8g"
     color: "#A93226"
-  - name: "Knowledge at Wharton"
-    id: "UCIf6t3gpKr_D46xuWlj9UAQ"
-    color: "#1F618D"
-
-  # === Indonesian Creators ===
-  - name: "Raymond Chin"
-    id: "UCm4eA46c6boHmPrD0Lp2iEg"
+  - name: "Raymond Chin (Ngomongin Uang)"
+    id: "UCOcta1Ij35IrXMIbhed3MNg"
     color: "#00CEC9"
-  - name: "Felicia Putri Tjiasaka"
-    id: "UCcRPwXqvUHbf8nY5ofQ1_VA"
-    color: "#FD79A8"
   - name: "Coach Tom (Tom MC Ifle)"
     id: "UCnBbolAKpFYQqEG7LkD67CA"
     color: "#A29BFE"
 
-  # === FLAGGED — review setelah 2 minggu, drop kalau rasio skip >70% ===
-  - name: "Helmy Yahya Bicara"
-    id: "UC5kyULWIngxMEeXsivTydLQ"
-    color: "#6C757D"
-  - name: "Andika Sutoro Putra"
-    id: "UCv5lUwOhsvzSfcNB5bDvh-Q"
-    color: "#495057"
+  # ---------- BELUM VERIFIED — ISI MANUAL via View Source ----------
+  # Uncomment satu per satu setelah ID-nya kamu verifikasi.
+  # Channel ID di config lama AI-hallucinated, JANGAN dipakai.
+  #
+  # - name: "My First Million"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # ambil dari https://www.youtube.com/@MyFirstMillionPod (main, bukan Clips)
+  #   color: "#4A90E2"
+  #
+  # - name: "20VC with Harry Stebbings"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # ambil dari halaman main channel Harry Stebbings (bukan @20VC = Business of Sport)
+  #   color: "#9B59B6"
+  #
+  # - name: "The Diary Of A CEO"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main channel Steven Bartlett (bukan DOAC Clips)
+  #   color: "#C0392B"
+  #
+  # - name: "Codie Sanchez"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # NOTE: Codie rebrand ke @BigDealCodieSanchez, mungkin sudah ini main channel-nya
+  #   color: "#F39C12"
+  #
+  # - name: "a16z"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main @a16z (bukan Deep Dives — itu side channel)
+  #   color: "#FF6B35"
+  #
+  # - name: "Y Combinator"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main @ycombinator (bukan YC Root Access)
+  #   color: "#3498DB"
+  #
+  # - name: "The Knowledge Project (Shane Parrish / Farnam Street)"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # cek @ShanePar atau @TheKnowledgeProjectPodcast
+  #   color: "#1ABC9C"
+  #
+  # - name: "All-In Podcast"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main @AllInPodcast (bukan All In Clips)
+  #   color: "#34495E"
+  #
+  # - name: "Harvard Business Review"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main HBR official (bukan HBR Ascend)
+  #   color: "#7D3C98"
+  #
+  # - name: "Knowledge at Wharton"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # cek @KnowledgeAtWharton (kalau exist), bukan Wharton School umum
+  #   color: "#1F618D"
+  #
+  # - name: "Felicia Putri Tjiasaka"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # cek handle resmi, contoh: @FeliciaPutriTjiasaka_
+  #   color: "#FD79A8"
+  #
+  # - name: "Helmy Yahya Bicara"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # main Helmy Yahya (bukan HY Sport)
+  #   color: "#6C757D"
+  #
+  # - name: "Andika Sutoro Putra"
+  #   id: "UC_xxxxxxxxxxxxxxxxxxxx"  # cek handle resmi, mungkin sudah ganti
+  #   color: "#495057"
