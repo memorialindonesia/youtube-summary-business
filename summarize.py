@@ -2,11 +2,11 @@
 """
 YouTube Business Podcast Summary Pipeline.
 
-Fetches recent videos from configured channels, gets transcripts via Supadata,
-summarizes via Claude Sonnet with operator-focused prompt, posts to Discord webhook.
-
-Designed for founder/operator post-PMF (tim 20-50 orang) consuming long-form
-business podcasts. Output dalam Bahasa Indonesia dengan English jargon dipertahankan.
+PATCHED untuk fix RSS bozo errors:
+1. Fetch RSS via requests + User-Agent header (bukan feedparser.parse(url) langsung).
+   feedparser tanpa header sering kena 404 dari YouTube datacenter IPs.
+2. Add 1.5 detik delay antar channel untuk hindari rate limit.
+3. Better error reporting: distinguish 404 (channel ID salah) vs throttling.
 """
 
 import json
@@ -24,6 +24,9 @@ from anthropic import Anthropic
 
 CONFIG_PATH = "config.yaml"
 STATE_PATH = "state.json"
+
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+RSS_HEADERS = {"User-Agent": UA, "Accept-Language": "en-US,en;q=0.9"}
 
 with open(CONFIG_PATH, "r", encoding="utf-8") as f:
     config = yaml.safe_load(f)
@@ -57,8 +60,34 @@ processed_ids = set(state["processed_video_ids"])
 def hex_to_int(hex_str: str) -> int:
     return int(hex_str.lstrip("#"), 16)
 
+
+def fetch_rss(channel_id: str) -> feedparser.FeedParserDict | None:
+    """
+    Fetch YouTube RSS via requests + UA header, parse via feedparser.
+    Return None kalau channel invalid atau RSS gagal.
+    """
+    url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
+    try:
+        r = requests.get(url, headers=RSS_HEADERS, timeout=20)
+    except Exception as e:
+        print(f"    network error: {e}")
+        return None
+
+    if r.status_code == 404:
+        print(f"    HTTP 404 — channel_id invalid atau YouTube Music podcast (no RSS)")
+        return None
+    if r.status_code != 200:
+        print(f"    HTTP {r.status_code} — possibly throttled, will retry next run")
+        return None
+
+    feed = feedparser.parse(r.content)
+    if feed.bozo:
+        print(f"    feed parse error: {feed.bozo_exception}")
+        return None
+    return feed
+
+
 def get_video_metadata(video_id: str) -> dict:
-    """Fetch video metadata (duration, title) via Supadata."""
     url = "https://api.supadata.ai/v1/youtube/video"
     headers = {"x-api-key": SUPADATA_API_KEY}
     params = {"id": video_id}
@@ -66,8 +95,8 @@ def get_video_metadata(video_id: str) -> dict:
     r.raise_for_status()
     return r.json()
 
+
 def get_transcript(video_id: str) -> str:
-    """Fetch transcript text via Supadata."""
     url = "https://api.supadata.ai/v1/youtube/transcript"
     headers = {"x-api-key": SUPADATA_API_KEY}
     params = {"videoId": video_id, "text": "true"}
@@ -119,8 +148,8 @@ Aturan tambahan:
 - Tidak boleh hedging berlebihan ("mungkin", "bisa jadi", "tergantung")
 - Jika konten clickbait atau tidak deliver value, kasih rekomendasi Skip dengan jujur"""
 
+
 def summarize(channel_name: str, title: str, transcript: str) -> str:
-    # Cap transcript to ~50k chars (~12k tokens) to control cost
     capped = transcript[:50000]
     msg = claude.messages.create(
         model=settings["claude_model"],
@@ -155,17 +184,20 @@ def main():
     lookback = timedelta(days=settings["initial_lookback_days"])
     cutoff = datetime.now(timezone.utc) - lookback
     candidates = []
+    rss_failed = []
 
     print(f"Lookback cutoff: {cutoff.isoformat()}")
     print(f"Channels: {len(channels)}\n")
 
     # Pass 1: discover candidates from RSS
     for channel in channels:
-        feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel['id']}"
-        feed = feedparser.parse(feed_url)
-        if feed.bozo:
-            print(f"  RSS bozo for {channel['name']}: {feed.bozo_exception}")
+        print(f"  {channel['name']}")
+        feed = fetch_rss(channel["id"])
+        if feed is None:
+            rss_failed.append(channel["name"])
+            time.sleep(1.5)
             continue
+
         new_count = 0
         for entry in feed.entries:
             try:
@@ -186,17 +218,21 @@ def main():
                 "published_str": published.strftime("%Y-%m-%d"),
             })
             new_count += 1
-        print(f"  {channel['name']}: {new_count} new candidates")
+        print(f"    → {new_count} new candidates")
+        time.sleep(1.5)  # gentle delay antar channel
 
-    # Sort oldest first so older episodes get processed before newer ones
+    if rss_failed:
+        print(f"\n⚠ RSS failed for {len(rss_failed)} channels: {', '.join(rss_failed)}")
+        print(f"  Run `python verify_channels.py` untuk diagnostik per-channel.\n")
+
     candidates.sort(key=lambda v: v["published"])
 
     cap = settings["max_videos_per_run"]
     if len(candidates) > cap:
-        print(f"\nTotal candidates: {len(candidates)} — capping at {cap} (oldest first)")
+        print(f"Total candidates: {len(candidates)} — capping at {cap} (oldest first)")
         candidates = candidates[:cap]
     else:
-        print(f"\nTotal candidates: {len(candidates)}")
+        print(f"Total candidates: {len(candidates)}")
 
     min_dur = settings["min_duration_seconds"]
     success = 0
@@ -205,17 +241,16 @@ def main():
 
     for v in candidates:
         try:
-            # Duration filter via metadata call
             try:
                 meta = get_video_metadata(v["video_id"])
-                duration = meta.get("duration", 0)  # in seconds
+                duration = meta.get("duration", 0)
             except Exception as e:
                 print(f"  meta fail {v['video_id']}: {e} — proceeding without duration check")
                 duration = None
 
             if duration and duration < min_dur:
                 print(f"  ⏭ short ({duration}s): {v['title'][:60]}")
-                processed_ids.add(v["video_id"])  # mark to avoid re-checking
+                processed_ids.add(v["video_id"])
                 skipped_short += 1
                 continue
 
@@ -232,12 +267,11 @@ def main():
             processed_ids.add(v["video_id"])
             success += 1
             print(f"  ✓ {v['channel']['name']}: {v['title'][:60]}")
-            time.sleep(2)  # gentle rate limit
+            time.sleep(2)
 
         except Exception as e:
             failed += 1
             print(f"  ✗ {v['video_id']} failed: {e}")
-            # Don't mark as processed — retry next run
 
     print(f"\nDone: {success} posted, {skipped_short} short-skipped, {failed} failed")
 
